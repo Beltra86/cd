@@ -1,16 +1,7 @@
 {
   "countdowns": [
-    {
-      "title": "Berlino e Praga",
-      "date": "2026-07-31T08:00:00"
-    },
-    {
-      "title": "Pausa pranzo",
-      "date": "2026-03-09T13:05:00"
-    },
-    {
-      "title": "Verzegnis 50",
-      "date": "2074-12-20T03:08:00"
-    }
+    {"title":"Berlino e Praga","date":"2026-07-31T08:00:00"},
+    {"title": "Pausa pranzo","date": "2026-03-09T13:05:00"},
+    {"title": "Verzegnis 50","date": "2074-12-20T03:08:00"}
   ]
 }
