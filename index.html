@@ -13,11 +13,6 @@ body{
     padding:40px;
 }
 
-h1{
-    text-align:center;
-    margin-bottom:40px;
-}
-
 #countdowns{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
@@ -41,7 +36,7 @@ h1{
 
 .time-grid{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(3,1fr);
     gap:8px;
 }
 
@@ -65,8 +60,6 @@ h1{
 
 </head>
 <body>
-
-<h1>⏳ I miei countdown</h1>
 
 <div id="countdowns"></div>
 
@@ -124,11 +117,6 @@ card.innerHTML=`
 <div class="label l3"></div>
 </div>
 
-<div class="box">
-<div class="number n4" data-date="${cd.date}">0</div>
-<div class="label l4"></div>
-</div>
-
 </div>
 `;
 
@@ -140,23 +128,44 @@ startTimer();
 
 }
 
-function getYearDifference(now,target){
+function diffParts(now,target){
 
 let years=target.getFullYear()-now.getFullYear();
+let months=target.getMonth()-now.getMonth();
+let days=target.getDate()-now.getDate();
+let hours=target.getHours()-now.getHours();
+let minutes=target.getMinutes()-now.getMinutes();
+let seconds=target.getSeconds()-now.getSeconds();
 
-let test=new Date(now);
-test.setFullYear(now.getFullYear()+years);
-
-if(test>target){
-years--;
-test.setFullYear(now.getFullYear()+years);
+if(seconds<0){
+seconds+=60;
+minutes--;
 }
 
-let remaining=target-test;
+if(minutes<0){
+minutes+=60;
+hours--;
+}
 
-let days=Math.floor(remaining/(1000*60*60*24));
+if(hours<0){
+hours+=24;
+days--;
+}
 
-return {years,days,remaining};
+if(days<0){
+
+let prevMonth=new Date(target.getFullYear(),target.getMonth(),0).getDate();
+days+=prevMonth;
+months--;
+
+}
+
+if(months<0){
+months+=12;
+years--;
+}
+
+return {years,months,days,hours,minutes,seconds};
 
 }
 
@@ -178,49 +187,47 @@ card.remove();
 return;
 }
 
-const totalDays=Math.floor(diff/(1000*60*60*24));
+const p=diffParts(now,target);
 
-let v1,v2,v3,v4;
-let l1,l2,l3,l4;
+let v1,v2,v3;
+let l1,l2,l3;
 
-if(totalDays>365){
+if(p.years>0){
 
-const yd=getYearDifference(now,target);
+v1=p.years; l1="anni";
+v2=p.months; l2="mesi";
+v3=p.days; l3="giorni";
 
-const years=yd.years;
-const days=yd.days;
+}
+else if(p.months>0){
 
-const hours=Math.floor((diff/(1000*60*60))%24);
-const minutes=Math.floor((diff/(1000*60))%60);
+v1=p.months; l1="mesi";
+v2=p.days; l2="giorni";
+v3=p.hours; l3="ore";
 
-v1=years; l1="anni";
-v2=days; l2="giorni";
-v3=hours; l3="ore";
-v4=minutes; l4="min";
+}
+else if(p.days>0){
 
-}else{
+v1=p.days; l1="giorni";
+v2=p.hours; l2="ore";
+v3=p.minutes; l3="min";
 
-const days=totalDays;
-const hours=Math.floor((diff/(1000*60*60))%24);
-const minutes=Math.floor((diff/(1000*60))%60);
-const seconds=Math.floor((diff/1000)%60);
+}
+else{
 
-v1=days; l1="giorni";
-v2=hours; l2="ore";
-v3=minutes; l3="min";
-v4=seconds; l4="sec";
+v1=p.hours; l1="ore";
+v2=p.minutes; l2="min";
+v3=p.seconds; l3="sec";
 
 }
 
 card.querySelector(".n1").textContent=v1;
 card.querySelector(".n2").textContent=v2;
 card.querySelector(".n3").textContent=v3;
-card.querySelector(".n4").textContent=v4;
 
 card.querySelector(".l1").textContent=l1;
 card.querySelector(".l2").textContent=l2;
 card.querySelector(".l3").textContent=l3;
-card.querySelector(".l4").textContent=l4;
 
 });
 
