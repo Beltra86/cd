@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Countdown</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f5f5f5;
+    text-align:center;
+}
+
+h1{
+    margin-top:40px;
+}
+
+#countdowns{
+    max-width:700px;
+    margin:auto;
+}
+
+.countdown{
+    background:white;
+    padding:20px;
+    margin:15px;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.title{
+    font-size:20px;
+    font-weight:bold;
+}
+
+.time{
+    font-size:28px;
+    margin-top:10px;
+    font-family:monospace;
+}
+</style>
+
+</head>
+<body>
+
+<h1>I miei countdown</h1>
+
+<div id="countdowns"></div>
+
+<script>
+
+async function loadCountdowns(){
+    const response = await fetch("countdowns.json");
+    const data = await response.json();
+
+    const now = new Date();
+
+    // rimuove quelli scaduti e ordina per data
+    const countdowns = data.countdowns
+        .filter(c => new Date(c.date) > now)
+        .sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+    const container = document.getElementById("countdowns");
+
+    countdowns.forEach(cd => {
+
+        const div = document.createElement("div");
+        div.className = "countdown";
+
+        div.innerHTML = `
+            <div class="title">${cd.title}</div>
+            <div class="time" data-date="${cd.date}"></div>
+        `;
+
+        container.appendChild(div);
+    });
+
+    startTimer();
+}
+
+function startTimer(){
+
+    function update(){
+
+        const now = new Date();
+
+        document.querySelectorAll(".time").forEach(el => {
+
+            const target = new Date(el.dataset.date);
+            const diff = target - now;
+
+            if(diff <= 0){
+                el.closest(".countdown").remove();
+                return;
+            }
+
+            const days = Math.floor(diff/(1000*60*60*24));
+            const hours = Math.floor((diff/(1000*60*60))%24);
+            const minutes = Math.floor((diff/(1000*60))%60);
+            const seconds = Math.floor((diff/1000)%60);
+
+            el.textContent =
+                days + "g " +
+                hours + "h " +
+                minutes + "m " +
+                seconds + "s";
+        });
+
+    }
+
+    update();
+    setInterval(update,1000);
+}
+
+loadCountdowns();
+
+</script>
+
+</body>
+</html>
