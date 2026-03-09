@@ -5,111 +5,230 @@
 <title>Countdown</title>
 
 <style>
+
 body{
-    font-family: Arial, sans-serif;
-    background:#f5f5f5;
-    text-align:center;
+    font-family:system-ui,sans-serif;
+    background:#f5f7fb;
+    margin:0;
+    padding:40px;
 }
 
 h1{
-    margin-top:40px;
+    text-align:center;
+    margin-bottom:40px;
 }
 
 #countdowns{
-    max-width:700px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+    max-width:1000px;
     margin:auto;
 }
 
-.countdown{
-    background:white;
+.card{
+    border-radius:16px;
     padding:20px;
-    margin:15px;
-    border-radius:10px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    color:white;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
 }
 
 .title{
-    font-size:20px;
-    font-weight:bold;
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:15px;
 }
 
-.time{
-    font-size:28px;
-    margin-top:10px;
-    font-family:monospace;
+.time-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
 }
+
+.box{
+    background:rgba(255,255,255,0.25);
+    border-radius:10px;
+    padding:10px 6px;
+    text-align:center;
+}
+
+.number{
+    font-size:22px;
+    font-weight:700;
+}
+
+.label{
+    font-size:11px;
+}
+
 </style>
 
 </head>
 <body>
 
-<h1>I miei countdown</h1>
+<h1>⏳ I miei countdown</h1>
 
 <div id="countdowns"></div>
 
 <script>
 
+const colors=[
+"#6366f1",
+"#ef4444",
+"#10b981",
+"#f59e0b",
+"#3b82f6",
+"#8b5cf6",
+"#ec4899",
+"#14b8a6"
+];
+
 async function loadCountdowns(){
-    const response = await fetch("countdowns.json");
-    const data = await response.json();
 
-    const now = new Date();
+const response=await fetch("countdowns.json");
+const data=await response.json();
 
-    // rimuove quelli scaduti e ordina per data
-    const countdowns = data.countdowns
-        .filter(c => new Date(c.date) > now)
-        .sort((a,b)=> new Date(a.date) - new Date(b.date));
+const now=new Date();
 
-    const container = document.getElementById("countdowns");
+const countdowns=data.countdowns
+.filter(c=>new Date(c.date)>now)
+.sort((a,b)=>new Date(a.date)-new Date(b.date));
 
-    countdowns.forEach(cd => {
+const container=document.getElementById("countdowns");
 
-        const div = document.createElement("div");
-        div.className = "countdown";
+countdowns.forEach((cd,i)=>{
 
-        div.innerHTML = `
-            <div class="title">${cd.title}</div>
-            <div class="time" data-date="${cd.date}"></div>
-        `;
+const color=colors[i%colors.length];
 
-        container.appendChild(div);
-    });
+const card=document.createElement("div");
+card.className="card";
+card.style.background=color;
 
-    startTimer();
+card.innerHTML=`
+<div class="title">${cd.title}</div>
+
+<div class="time-grid">
+
+<div class="box">
+<div class="number n1" data-date="${cd.date}">0</div>
+<div class="label l1"></div>
+</div>
+
+<div class="box">
+<div class="number n2" data-date="${cd.date}">0</div>
+<div class="label l2"></div>
+</div>
+
+<div class="box">
+<div class="number n3" data-date="${cd.date}">0</div>
+<div class="label l3"></div>
+</div>
+
+<div class="box">
+<div class="number n4" data-date="${cd.date}">0</div>
+<div class="label l4"></div>
+</div>
+
+</div>
+`;
+
+container.appendChild(card);
+
+});
+
+startTimer();
+
+}
+
+function getYearDifference(now,target){
+
+let years=target.getFullYear()-now.getFullYear();
+
+let test=new Date(now);
+test.setFullYear(now.getFullYear()+years);
+
+if(test>target){
+years--;
+test.setFullYear(now.getFullYear()+years);
+}
+
+let remaining=target-test;
+
+let days=Math.floor(remaining/(1000*60*60*24));
+
+return {years,days,remaining};
+
 }
 
 function startTimer(){
 
-    function update(){
+function update(){
 
-        const now = new Date();
+const now=new Date();
 
-        document.querySelectorAll(".time").forEach(el => {
+document.querySelectorAll(".card").forEach(card=>{
 
-            const target = new Date(el.dataset.date);
-            const diff = target - now;
+const date=card.querySelector(".n1").dataset.date;
+const target=new Date(date);
 
-            if(diff <= 0){
-                el.closest(".countdown").remove();
-                return;
-            }
+const diff=target-now;
 
-            const days = Math.floor(diff/(1000*60*60*24));
-            const hours = Math.floor((diff/(1000*60*60))%24);
-            const minutes = Math.floor((diff/(1000*60))%60);
-            const seconds = Math.floor((diff/1000)%60);
+if(diff<=0){
+card.remove();
+return;
+}
 
-            el.textContent =
-                days + "g " +
-                hours + "h " +
-                minutes + "m " +
-                seconds + "s";
-        });
+const totalDays=Math.floor(diff/(1000*60*60*24));
 
-    }
+let v1,v2,v3,v4;
+let l1,l2,l3,l4;
 
-    update();
-    setInterval(update,1000);
+if(totalDays>365){
+
+const yd=getYearDifference(now,target);
+
+const years=yd.years;
+const days=yd.days;
+
+const hours=Math.floor((diff/(1000*60*60))%24);
+const minutes=Math.floor((diff/(1000*60))%60);
+
+v1=years; l1="anni";
+v2=days; l2="giorni";
+v3=hours; l3="ore";
+v4=minutes; l4="min";
+
+}else{
+
+const days=totalDays;
+const hours=Math.floor((diff/(1000*60*60))%24);
+const minutes=Math.floor((diff/(1000*60))%60);
+const seconds=Math.floor((diff/1000)%60);
+
+v1=days; l1="giorni";
+v2=hours; l2="ore";
+v3=minutes; l3="min";
+v4=seconds; l4="sec";
+
+}
+
+card.querySelector(".n1").textContent=v1;
+card.querySelector(".n2").textContent=v2;
+card.querySelector(".n3").textContent=v3;
+card.querySelector(".n4").textContent=v4;
+
+card.querySelector(".l1").textContent=l1;
+card.querySelector(".l2").textContent=l2;
+card.querySelector(".l3").textContent=l3;
+card.querySelector(".l4").textContent=l4;
+
+});
+
+}
+
+update();
+setInterval(update,1000);
+
 }
 
 loadCountdowns();
